@@ -1,0 +1,46 @@
+-> 요청하는 클라이언트 클래스가 있고, 그걸 사용하는 컨트롤러 클래스가 존재
+
+
+app디렉토리
+	API디렉토리
+		*. HealthCheck ( 컨트롤러 / Dto )
+		*. Login 
+			컨트롤러 : Dto + HttpServletRequest를 받음
+				 1. Authorization Header값 검증
+				 2. Dto내 요청 클래스에서 어떤 소셜 로그인 회원 타입인지 확인 및 검증
+				 3. 요청 온 accessToken(**여기서 토큰은 소셜로그인쪽 토큰을 의미합니다***) 과 소셜로그인 회원타입을 서비스 단으로 넘김
+
+			서비스   :  넘어온 소셜로그인 회원타입(kakao냐 구글이냐)에 맞게 socialLoginApiService를 갈아끼웁니다. ( socialLoginApiService는 인터페이스가 되겠죠 )
+				  "소셜로그인쪽 access Token"으로 소셜로그인쪽 API를 쏴서 유저정보를 반환받습니다.           ( 소셜쪽에서 회원정보를 받아옴 -> 우린 그걸 이용한다.)
+				  반환받은 정보로 우리쪽 회원DB를 조회해서 이미 있는 회원인지 판단
+					없다면 회원가입 로직 / 있다면 로그인 로직
+					--> """""여기 아래에서 부턴 우리의 access Token을 이용함""""""""""
+					둘다 공통적으로 마지막에 토큰을생성해서( 멤버ID와 ROLE을 기반으로 ), 해당 유저 Entity에 refreshToken 정보를 업데이트 합니다.
+                                                                 ( TokenManager 클래스 사용 )  - accessToken + refreshToken 둘다 생성 ( "Jwts 의존성 사용" )
+
+                                      Dto (내부에 static class 2개) 
+				- Request (소셜로그인 회원 타입 변수1개 {ex. KAKAO}) 
+				- Response ( grantType : 예시로 Bearer / accessToken / refreshToken )
+					     accessTokenExpireTime / refreshTokenExpireTime
+		*.Logout
+			컨트롤러 : HttpServletRequest를 받음
+				  Authorization 헤더를 검증합니다. accessToken (우리의 accessToken) 을 logout Service에 넘깁니다. 
+			서비스    : 넘겨받은 accessToken을 검증합니다.
+                                                    토큰타입을 확인합니다. tokenClaims (토큰 내부 실질적인 복호화 정보) 을 통해서요
+				  이 tokenClaims 안에 memberId가 존재하고, 요 memberId로 우리 멤버DB를 뒤집니다.
+                                                     반환받은 멤버의 entity단 메소드 expireRefreshToken 메소드를 실행합니다. ( 유저Entity 컬럼 refreshToken Expired Time을 바로 지금으로 만들어버림 )
+
+
+		*.Member
+			컨트롤러 : getMemberInfo Api 1개 ( Dto를 반환하는데, 회원아이디 / 이메일 / 회원이름 / 회원 Role / 프사 이미지 경로 등 )
+			서비스   : 회원조회 서비스
+
+		*.Token
+			컨트롤러 : Access Token 재발급 API 존재
+					1.Authorization 헤더에서 값을 가져오고 검증 진행
+					2.Refresh Token을 뽑아내고, 그걸 기반으로 TokenService의 createAccessTokenByRefreshToken 메소드를 실행합니다.
+			서비스   : 위에서 받은 refreshToken으로 해당 member를 find합니다.
+                                                   찾은 멤버 정보로 tokenManager의 createAccessToken을 진행합니다. 그리고 그걸 반환합니다.
+
+
+

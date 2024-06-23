@@ -1,0 +1,37 @@
+web 디렉토리
+	kakaotoken 디렉토리
+		client 디렉토리
+			KakaoTokenClient.java ( interface ) -> 내부 비즈니스 로직없이 요청하고 응답만 넘기는 역할이므로
+				@FeignClient어노테이션이 붙어서 해당 역할을 하는 클래스
+				@FeignClient(url = "내부에 선언된 메소드들이 앞단에 공통적으로 요청한 url" , name = "해당FeignClinet클래스의 별칭")
+
+				내부 메소드 @PostMapping ( value = "이후 달라지는 세부요청 url 기재(요청할)" , consumes = "application/json" )
+									consumes는 들어오는 데이터 타입을 정의합니다.
+									해당 uri를 호출하는 쪽에서는 헤더에 보내는 데이터가 json이라는걸 명시해야함
+									Content-type:application/json ( 사실 우리가 호출하는 입장이다, FeignClient라 )
+
+				---> 요약하자면 consumes 옵션은 클라이언트가 서버에게 보내는 데이터 타입을 명시한다.
+				---> 요약하자면 produces  옵션은 서버가 클라이언트에게 보내는 데이터 타입을 명시한다.
+
+				우리쪽에서 application/json 타입으로 보내겠다해서 그런지, parameter 부분에 @SpringQueryMap을 사용한다.
+				@SpringQueryMap -> 요청을 보낼대, Query parameter를 map형태로 전달하기 위해서 사용한다.
+
+
+
+안녕하세요! 이 부분은 제가 실수를 했었네요
+
+ 
+
+아래 2개 모두다 보낼 content-type을 지정하는 부분이고, 호출해보니 우선순위는 consumes가 더 높은걸로 확인했습니다.
+
+@RequestHeader("Content-Type)
+
+@PostMapping(value = "/oauth/token", consumes = "application/json")
+
+ 
+
+카카오 문서에는 application/x-www-form-urlencoded;charset=utf-8으로 보내라고 되어있는데, apllication/json으로 보내도 정상적으로 수행됐었네요
+
+ 
+
+말씀하신것처럼 @RequestHeader("Content-Type) 를 제거하고, consumes="application/x-www-form-urlencoded;charset=utf-8"로 지정하고 보내셔도 됩니다.

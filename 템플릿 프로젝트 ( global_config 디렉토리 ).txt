@@ -1,0 +1,51 @@
+global 디렉토리
+	config 디렉토리
+		jpa 디렉토리
+			AuditoAwareImpl.java
+				AuditorAware<Strimg>을 implements 하는 클래스
+
+				1. HttpServletRequest를 의존성 주입받습니다.
+				2. 내부에 getCurrentAuditor 메소드를 override 합니다.
+					HttpServletRequest의 getRequestURI()를 호출 ( modifiedBy를 추출 )
+						"어떤 API (URL)를 통해서 변경됬는지 String형태가 modifiedBy에 들어감"
+						Optional.of(modifiedBy) 를 return합니다. // Optional의 of 메소드를 통해서 Optional 객체를 생성해서 Optional로 반환합니다.
+
+			JpaConfig.java
+				Auditing을 위한 핵심적인 클래스(빈)가 됩니다.
+				@Configuration 어노테이션이 붙고 , " @EnableJpaAuditing 어노테이션 "이 붙습니다.
+				
+				내부에 @Bean 어노테이션 메소드가 존재합니다. ( new 객체를 반환하는 메소드들 )
+                                                  우리가 만든 AuditorAwareImpl을 return 해줍니다. 요건 사실 AuditorAware<String> 형이 됩니다. 
+
+		web 디렉토리
+			HtmlCharaterEscapes.java // "xss 방지 처리할 특수 문자 지정" , 여기 파일 내용은 그때 직접 확인하는게 좋을것 같습니다.
+				1. CharacterEscapse를 상속하는 클래스 입니다.
+
+			WebConfig.java
+				핵심적으로 "WebMvcConfigurer를 implemenets" 합니다. ( override 해서 구현 한다는 거겟죠 )
+				@Configuration 어노테이션이 붙습니다. 안에 내부 설정빈들도 등록해주는게 있겠죠.
+				
+				WebMvcConfigurer를 implements 하는곳에,
+				- addCorsMappings (url등 여러 조건 매핑) / addInterceptors ( url등 여러 조건 매핑 ) / addArgumentResolvers ( resolver 추가 ) 
+				- MappingJackson2HttpMessageConverter @Bean 등록 및 configureMessageConverters에 등록하기(add)	
+				  이때 우리가 만든 크로스사이트스크립팅 HtmlCharacterEscapes를 set해줍니다.
+				- "FilterRegistrationBean<XssEscapeServletFilter> "
+
+		FeignConfiguration.java
+			@EnableFeignClients(basePackages = "") 설정 등 FeignClient 관련 설정 등록
+			ErrorDecoder및 Retryer도 등록가능합니다.
+			- ErrorDecoder를 implements해서 우리의 FeignClientExceptionErrorDecoder를 만듬 , decode메소드를 오버라이드
+
+		JasyptConfig.java
+
+		SecurityConfig.java
+			토큰관련 설정시간값들 (application.yml에 기재한값을 @Value 어노테이션으로 가져와서 필드값 초기화) , 그리고 tokenSecret ( 암호화할 기반 문자열 )
+                                      토큰매니저(액세스토큰만료시간,리프레시토큰만료시간,tokenSecret) 기반으로 TokenManager 빈등록 @Bean
+
+
+
+		SwaggerConfig.java
+			Docket @Bean 등록 , 빈 등록을 위한 메소드들을 선언하고, 해당 메소드들을 chain으로 연결해서 Docket 빈을 생성후 Bean 등록한다.
+
+		
+								

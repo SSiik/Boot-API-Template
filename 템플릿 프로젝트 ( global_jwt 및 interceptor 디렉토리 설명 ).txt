@@ -1,0 +1,38 @@
+global 디렉토리
+	interceptor 디렉토리
+		AdminAuthorizationInterceptor.java
+			우린 Interceptor들을 WebMvcConfigurer를 implements한 클래스에 보통 등록해줍니다.
+			그리고 이 Interceptor 클래스들은 "HandlerInterceptor"들을 implements 합니다.
+			그리고 preHandle 메소드를 override해서 구현을 하죠
+
+			말그대로 관리자인지 (admin)를 보려면 들어온 accessToken의 Claims정보를 얻으면 되겠죠.
+			" 우린 토큰의 Claim에 어떤 정보를 넣을지 지정할수 있으니깐요 "
+				-> 해당 정보를 넣어서 암호화를 해서 그렇습니다.
+			claim에서 getRole을 해서 role을 얻고 그게 admin인지 아닌지 보면되겠죠.
+
+		AuthenticationInterceptor.java
+			역시나 위의 AdminAuthorizationInterceptor 처럼 HandlerInterceptor를 implements 하고,
+			preHandle 메소드를 override 해서 즉 구현해주면 되겠죠!
+			내용은 위와 비슷합니다. accessToken을 탈취해서, 유효한 토큰인지 검증합니다.
+
+
+	jwt 디렉토리
+		constant 디렉토리
+			GrantType.java
+				enum형태의 클래스
+					생성자들 열거형으로 진행 ; ErrorCode처럼 미리값을 정의해놓음
+			TokenType.java
+				enum형태의 클래스
+
+		dto 디렉토리
+			JwtTokenDto.java
+				우선 @Builder 어노테이션 사용
+				String grantType,accessToken,refreshToken
+
+				Date accessTokenExpireTime,refreshTokenExpireTime
+				@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul") 사용
+				
+				-> *** Json으로 반환될때 Date 타입형을 STRING의 저런 형식으로 반환하겠다!!
+
+		Service 디렉토리
+			그리고 자주사용하는 TokenManager.java // 요건 그냥 내부 소스를 그때 직접 보는게 빠름

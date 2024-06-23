@@ -1,0 +1,45 @@
+global 디렉토리
+	error 디렉토리
+		exception 디렉토리
+			(내가 식별을 쉽게하기 위한 수동으로 만든 exception 클래스들)
+			BusinessException.java ( 기존에 존재하는 RuntimeEception을 extends 함 )
+       			  	내부에 ErrorCode 객체(필드)를 가짐
+				생성자로 부모생성자(super)에 ErrorCode의 getMessage를 넘깁니다. ( 부모의 기능을 이용 )
+ 							- 그걸 나는 ErrorCode에서 메세지를 관리하겠다는 거죠
+							- 그리고 ErrorCode 필드를 초기화
+			AuthenticationException.java
+				이건 이제 앞에서 정의한 BusinessException을 상속합니다.
+				super(errorCode) 딱 한줄 -> 그러면 자동으로 RuntimeException 까지 초기화되서 가겟죠 
+
+			EntityNotFoundException.java
+				요것도 BunsinessException을 상속. 내용은 역시 앞과 동일함
+
+	ErrorCode.java
+		-> Enum 파일
+		에러코드명(생성인자1,생성인자2,생성인자3) // 이 형태들을 열거합니다.
+		ErrorCode(인자1,인자2,인자3){초기화코드}   // 생성자 정의
+		
+		 private HttpStatus httpStatus;
+		 private String errorCode;
+		 private String message;
+
+	ErrorResponse.java
+		내부에 필드로 String형 errorCode와 errorMessage를 가집니다.
+		 BindingResult 객체를 통해서 또 errorMessage를 만들어내는 함수도 내부에 존재
+
+
+	FeignClientExceptionErrorDecoder.java
+		ErrorDecoder를 implemenets 하는 class
+		FeignClient ( 외부요청 )중 에러를 발견햇을때, 어떻게 진행할지에 대한 로직을 정의할수 있는 함수 decode , override 진행
+
+
+
+
+	GlobalExceptionHandler.java
+		에러처리의 정수파일
+		@RestControllerAdvice 어노테이션을 포함합니다.
+		
+		그리고 내부에 @ExceptionHandler(Exception타입) 들을 하나씩 선언합니다.
+		 ErrorResponse.of메소드로 만들어서, ResponseEntity body부에 우리가 위에서 만든  ErrorResponse 반환을 진행합니다.
+
+	

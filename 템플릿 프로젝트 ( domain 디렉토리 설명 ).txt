@@ -1,0 +1,15 @@
+domain디렉토리
+	common디렉토리
+		BaseEntity.java
+		 	1. BaseTimeEntity를 extends합니다. (내부 값들을 다 상속받음)
+			2. @MappedSuperClass 어노테이션 사용
+			3. @EntityListeners(value = AuditingEntityListener.class) 사용
+		BaseTimeEntity.java
+			2. @MappedSuperClass 어노테이션 사용
+			3. @EntityListeners(value = AuditingEntityListener.class) 사용
+
+	member 디렉토리
+		constant 디렉토리 (MemberType enum존재 / Role enum 존재 )
+		entity 디렉토리 (Member entity 존재)
+		repository 디렉토리  ( JpaRepository<Member,Long> 이용 )
+		service 디렉토리 
